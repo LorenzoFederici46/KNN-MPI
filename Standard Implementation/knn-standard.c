@@ -228,5 +228,3 @@ int main(int argc, char *argv[]) {
     MPI_Finalize();
     return 0;
 }
-    //      mpicc -o kd knn-standard.c -lm
-    //      mpirun -np 4 --oversubscribe ./kd 1000
