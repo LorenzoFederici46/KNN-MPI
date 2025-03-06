@@ -1,4 +1,3 @@
-# Variabili
 CC = mpicc                
 CFLAGS = -Wall -O2        
 LIBS = -lm                
