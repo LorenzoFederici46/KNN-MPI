@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
         local_n++;
     }
     
-    // Calcolo dell'indice di inizio di ogni processo
+    /* Calcolo dell'indice di inizio di ogni processo */
     int start_idx = 0;
     for (int i = 0; i < rank; i++) {
         start_idx += (i < remainder) ? (n / size + 1) : (n / size);
@@ -107,10 +107,10 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    // Distribuzione dei punti
+    // Distribuzione della quantità di punti di cui ogni processo si occupa
     MPI_Bcast(&local_dataset_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
     
-    // Alloco il dataset locale
+    // Alloco i vari dataset locali di ogni processo
     local_dataset = (Point3D *)malloc(local_dataset_size * sizeof(Point3D));
     
     if (rank == 0) {
@@ -141,9 +141,7 @@ int main(int argc, char *argv[]) {
         
         // Ricerca dei KNN
         for (int i = 0; i < local_n; i++) {
-            findKNearestNeighbors(local_kdTree, local_points[i], k, 
-                                  knn_results[i], distances[i]);
-            
+            findKNearestNeighbors(local_kdTree, local_points[i], k, knn_results[i], distances[i]);
             // Print dei risultati
             printf("Point %d nearest neighbors: ", local_points[i].original_index);
             for (int j = 0; j < k; j++) {
@@ -163,7 +161,7 @@ int main(int argc, char *argv[]) {
         free(distances);
     }
     
-    // Giga enormico clean up
+    /* Giga enormico clean up */
     free(local_dataset);
     free(local_points);
     
