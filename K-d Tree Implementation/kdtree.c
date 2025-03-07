@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
         // Alloco lo spazio per il dataset intero
         all_points = (Point3D *)malloc(n * sizeof(Point3D));
     } else {
-        // I processi ricevono il numero di punti di cui trovare i knn
+        // Anche gli altri processi inviano il loro numero di punti, ma non salvano nulla
         MPI_Gather(&local_n, 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
     }
     

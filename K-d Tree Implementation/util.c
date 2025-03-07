@@ -88,7 +88,9 @@ void findKNearestNeighbors(KDNode *root, Point3D target, int k,
         // Calcolo la distanza del target al punto corrente
         double dist = calculateDistance(target, node->point);
         
-        // Se il punto corrente è più vicino, ri ordino i vicini
+        /* Se il punto corrente è più vicino, ri ordino i vicini in modo che l'ultimo nodo nell'array
+           sia il punto più lontano dei vicini 
+        */   
         if (dist < nearestNeighbors[k-1].distance) {
             nearestNeighbors[k-1].distance = dist;
             nearestNeighbors[k-1].index = node->point.original_index;
@@ -96,12 +98,14 @@ void findKNearestNeighbors(KDNode *root, Point3D target, int k,
             qsort(nearestNeighbors, k, sizeof(NearestNeighbor), compareNeighbors);
         }
 
-        // Determine axis for current node
+        // Determino l'asse di confronto per il nodo corrente
         int axis = node->depth % 3;
         double axisDiff = 0.0;
         double axisDist = 0.0;
         
-        // Choose splitting strategy based on axis
+        /* Scelgo dove spostarmi in base all'asse corrente
+           e calcolo la distanza dal nodo target al nodo corrente 
+        */ 
         switch (axis) {
             case 0: 
                 axisDiff = target.x - node->point.x; 
@@ -117,23 +121,27 @@ void findKNearestNeighbors(KDNode *root, Point3D target, int k,
                 break;
         }
 
-        // Determino il prossimo sotto-albero su cui fare la ricerca
+        /* Se la distanza è negativa, significa che il nodo target si trova nel sotto-albero sinistro
+           altrimenti nel sotto-albero destro 
+        */
         KDNode *nearerSubtree = (axisDiff < 0) ? node->left : node->right;
         KDNode *furtherSubtree = (axisDiff < 0) ? node->right : node->left;
 
-        // Mi sposto nel sotto-albero e richiamo la funzione in modo ricorsivo
+        // Quindi mi sposto nel sotto-albero più vicino e richiamo la funzione in modo ricorsivo
         searchKNN(nearerSubtree);
 
-        // Check in caso esistono altri sotto-alberi
+        /* Se la distanza corrente è più vicina della distanza salvata più lontana
+           significa che ci possono essere dei vicini più vicini, quindi ispeziono anche l'altro 
+        */
         if (axisDist < nearestNeighbors[k-1].distance) {
             searchKNN(furtherSubtree);
         }
     }
 
-    // Start recursive search
+    // Quindi alla fine richiamo la funzione ricorsiva partendo dalla radice
     searchKNN(root);
 
-    // Copy results back to output arrays
+    // Salvo i risultati ottenuti nei relativi array
     for (int i = 0; i < k; i++) {
         neighbors[i] = nearestNeighbors[i].index;
         distances[i] = nearestNeighbors[i].distance;
