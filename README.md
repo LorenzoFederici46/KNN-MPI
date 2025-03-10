@@ -6,10 +6,10 @@ This project implements the k-Nearest Neighbors (k-NN) algorithm using paralleli
 
 The project is organized into four main directories:
 
-- **K-d Tree Implementation/**: Implements k-NN using a KD-Tree to accelerate neighbor searches.
-- **Sequential Implementation/**: Sequential implementation of k-NN without parallel optimizations.
-- **Standard Implementation/**: Parallel implementation of k-NN using MPI, without the KD-Tree.
-- **Performance/**: C file for calculating speedup and efficiency based on execution times and the number of processors used.
+- **K-d Tree Implementation**: Implements k-NN using a KD-Tree to accelerate neighbor searches.
+- **Sequential Implementation**: Sequential implementation of k-NN without parallel optimizations.
+- **Standard Implementation**: Parallel implementation of k-NN using MPI, without the KD-Tree.
+- **Performance**: C file for calculating speedup and efficiency based on execution times and the number of processors used.
 
 Each folder contains a **Makefile** for easy compilation and execution.
 
