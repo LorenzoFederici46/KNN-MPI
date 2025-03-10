@@ -1,5 +1,5 @@
 # k-NN with MPI: Comparing Sequential and Parallel Execution
-![Performance Graph](https://media.geeksforgeeks.org/wp-content/uploads/20231207103856/KNN-Algorithm-(1).png)
+<img src="https://media.geeksforgeeks.org/wp-content/uploads/20231207103856/KNN-Algorithm-(1).png" alt="KD-Tree Structure" width="500"/>
 This project implements the k-Nearest Neighbors (k-NN) algorithm using parallelism via MPI to demonstrate the advantages of parallel execution over sequential execution.
 
 ## Project Structure
