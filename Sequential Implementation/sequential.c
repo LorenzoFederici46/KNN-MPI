@@ -65,27 +65,20 @@ int main(int argc, char *argv[]) {
     
     srand(time(NULL));
     
-    // Alloco la memoria e genero i punti
     Point3D *points = (Point3D *)malloc(n * sizeof(Point3D));
     generatePoints(points, n);
-    printf("Generated %d points in a 3D space (cube with edges of 100 units)\n", n);
     
-    // Per ogni valore di k
-    for (int k = k_min; k <= k_max; k += k_step) {
-        printf("\nComputing %d-Nearest Neighbors for each point...\n", k);
-        
-        // Alloco la memoria per salvare i risultati
+    for (int k = k_min; k <= k_max; k += k_step) {        
         int **knn_results = (int **)malloc(n * sizeof(int *));
         for (int i = 0; i < n; i++) {
             knn_results[i] = (int *)malloc(k * sizeof(int));
         }
         
-        // Ricerca dei k più vicini per ogni punto
         for (int i = 0; i < n; i++) {
             findKNN(points, n, i, k, knn_results[i]);
         }
         
-        // Stampa dei risultati ( Non tutti, solo alcuni giusto per dimostrazione )
+        /* Stampa dei risultati ( Non tutti, solo alcuni giusto per dimostrazione ) */ 
         printf("Results for k = %d (showing first 5 points):\n", k);
         int display_count = (n < 5) ? n : 5;
         for (int i = 0; i < display_count; i++) {
@@ -97,7 +90,6 @@ int main(int argc, char *argv[]) {
             printf("\n");
         }
         
-        // Deallocazione della memoria
         for (int i = 0; i < n; i++) {
             free(knn_results[i]);
         }

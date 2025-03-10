@@ -39,25 +39,25 @@ double calculateDistance(Point3D p1, Point3D p2) {
 KDNode* buildKDTree(Point3D *points, int start, int end, int depth) {
     if (start >= end) return NULL;
 
-    // Seleziono l'asse corrente in base alla profondità
+    /* Seleziono l'asse corrente in base alla profondità */ 
     int axis = depth % 3;
     
-    // Ordinamento dei punti in base all'asse corrente (0 -> x) (1 -> y) (2 -> z)
+    /* Ordinamento dei punti in base all'asse corrente (0 -> x) (1 -> y) (2 -> z) */ 
     switch (axis) {
         case 0: qsort(points + start, end - start, sizeof(Point3D), compareX); break;
         case 1: qsort(points + start, end - start, sizeof(Point3D), compareY); break;
         case 2: qsort(points + start, end - start, sizeof(Point3D), compareZ); break;
     }
 
-    // Trovo il punto mediano che diventa la radice corrente
+    /* Trovo l'indice del punto mediano che diventa la radice corrente */ 
     int mid = start + (end - start) / 2;
 
-    // Creo il nodo e lo inserisco nell'albero
+    /* Creo il nodo e lo inserisco nell'albero */ 
     KDNode *node = (KDNode *)malloc(sizeof(KDNode));
     node->point = points[mid];
     node->depth = depth;
 
-    // In modo ricorsivo richiamo la funzione in modo da generare i sottoalberi 
+    /* In modo ricorsivo richiamo la funzione in modo da generare i sottoalberi */
     node->left = buildKDTree(points, start, mid, depth + 1);
     node->right = buildKDTree(points, mid + 1, end, depth + 1);
 
@@ -71,21 +71,18 @@ void freeKDTree(KDNode *node) {
     free(node);
 }
 
-// Trovo i k piu' vicini per un punto
-void findKNearestNeighbors(KDNode *root, Point3D target, int k, 
-                            int *neighbors, double *distances) {
-    // Questa parte è come prima
+void findKNearestNeighbors(KDNode *root, Point3D target, int k, int *neighbors, double *distances) {                  
+    /* Questa parte è come prima */
     NearestNeighbor *nearestNeighbors = (NearestNeighbor *)malloc(k * sizeof(NearestNeighbor));
     for (int i = 0; i < k; i++) {
         nearestNeighbors[i].distance = DBL_MAX;
         nearestNeighbors[i].index = -1;
     }
-
-    // Per migliorare le performance, stavolta viene fatto in modo ricorsivo
+    /* Per migliorare le performance, stavolta viene fatto in modo ricorsivo */ 
     void searchKNN(KDNode *node) {
         if (node == NULL) return;
 
-        // Calcolo la distanza del target al punto corrente
+        /* Calcolo la distanza del target al punto corrente */
         double dist = calculateDistance(target, node->point);
         
         /* Se il punto corrente è più vicino, ri ordino i vicini in modo che l'ultimo nodo nell'array
@@ -98,7 +95,7 @@ void findKNearestNeighbors(KDNode *root, Point3D target, int k,
             qsort(nearestNeighbors, k, sizeof(NearestNeighbor), compareNeighbors);
         }
 
-        // Determino l'asse di confronto per il nodo corrente
+        /* Determino l'asse di confronto per il nodo corrente */
         int axis = node->depth % 3;
         double axisDiff = 0.0;
         double axisDist = 0.0;
@@ -127,7 +124,7 @@ void findKNearestNeighbors(KDNode *root, Point3D target, int k,
         KDNode *nearerSubtree = (axisDiff < 0) ? node->left : node->right;
         KDNode *furtherSubtree = (axisDiff < 0) ? node->right : node->left;
 
-        // Quindi mi sposto nel sotto-albero più vicino e richiamo la funzione in modo ricorsivo
+        /* Quindi mi sposto nel sotto-albero più vicino e richiamo la funzione in modo ricorsivo */
         searchKNN(nearerSubtree);
 
         /* Se la distanza corrente è più vicina della distanza salvata più lontana
@@ -138,10 +135,10 @@ void findKNearestNeighbors(KDNode *root, Point3D target, int k,
         }
     }
 
-    // Quindi alla fine richiamo la funzione ricorsiva partendo dalla radice
+    /* Quindi alla fine richiamo la funzione ricorsiva partendo dalla radice */
     searchKNN(root);
 
-    // Salvo i risultati ottenuti nei relativi array
+    /* Salvo i risultati ottenuti nei relativi array */ 
     for (int i = 0; i < k; i++) {
         neighbors[i] = nearestNeighbors[i].index;
         distances[i] = nearestNeighbors[i].distance;

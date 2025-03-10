@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     MPI_Type_create_struct(4, blocklengths, offsets, types, &point_type);
     MPI_Type_commit(&point_type);
     
-    // Generazione parallela dei punti
+    /* Generazione parallela dei punti */ 
     Point3D *local_points = (Point3D *)malloc(local_n * sizeof(Point3D));
     generatePoints(local_points, local_n, start_idx);
     
@@ -59,33 +59,33 @@ int main(int argc, char *argv[]) {
         recvcounts = (int *)malloc(size * sizeof(int));
         displs = (int *)malloc(size * sizeof(int));
         
-        // Il master riceve il numero di punti generati da ogni processo
+        /* Il master riceve il numero di punti generati da ogni processo */ 
         MPI_Gather(&local_n, 1, MPI_INT, recvcounts, 1, MPI_INT, 0, MPI_COMM_WORLD);
         
-        // Organizzazione dei blocchi
+        /* Organizzazione dei blocchi */ 
         displs[0] = 0;
         for (int i = 1; i < size; i++) {
             displs[i] = displs[i-1] + recvcounts[i-1];
         }
         
-        // Alloco lo spazio per il dataset intero
+        /* Alloco lo spazio per il dataset intero */ 
         all_points = (Point3D *)malloc(n * sizeof(Point3D));
     } else {
-        // Anche gli altri processi inviano il loro numero di punti, ma non salvano nulla
+        /* Anche gli altri processi inviano il loro numero di punti, ma non salvano nulla */ 
         MPI_Gather(&local_n, 1, MPI_INT, NULL, 0, MPI_INT, 0, MPI_COMM_WORLD);
     }
     
-    // Il master riceve i punti generati e costruisce il dataset
+    /* Tutti i processi quindi inviano i punti generati per formare l'intero dataset */ 
     MPI_Gatherv(local_points, local_n, point_type, 
                 all_points, recvcounts, displs, point_type, 0, MPI_COMM_WORLD);
     
-    // Costruisce il KD tree del dataset 
+    /* Il master quindi costruisce il KD tree del dataset */  
     KDNode *global_kdTree = NULL;
     if (rank == 0) {
         global_kdTree = buildKDTree(all_points, 0, n, 0);
     }
     
-    // Preparazione per la distribuzione delle porzioni di punti ai processi
+    /* Preparazione per la distribuzione delle porzioni di punti ai processi */ 
     int *sendcounts = NULL;
     int *senddispls = NULL;
     Point3D *local_dataset = NULL;
@@ -95,39 +95,39 @@ int main(int argc, char *argv[]) {
         sendcounts = (int *)malloc(size * sizeof(int));
         senddispls = (int *)malloc(size * sizeof(int));
         
-        // Calcolo della dimensione dei punti locale
+        /* Calcolo della dimensione dei punti locali */ 
         local_dataset_size = n;
         int base_size = local_dataset_size / size;
         int extra = local_dataset_size % size;
         
         for (int i = 0; i < size; i++) {
-            // Se il numero dei punti non è divisibile, un processo ne riceve uno in più
+            /* Se il numero dei punti non è divisibile, un processo ne riceve uno in più */ 
             sendcounts[i] = base_size + (i < extra ? 1 : 0);
             senddispls[i] = (i > 0 ? senddispls[i-1] + sendcounts[i-1] : 0);
         }
     }
     
-    // Distribuzione della quantità di punti di cui ogni processo si occupa
+    /* Distribuzione della quantità di punti di cui ogni processo si occupa */ 
     MPI_Bcast(&local_dataset_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
     
-    // Alloco i vari dataset locali di ogni processo
+    /* Alloco i vari dataset locali di ogni processo */ 
     local_dataset = (Point3D *)malloc(local_dataset_size * sizeof(Point3D));
     
     if (rank == 0) {
-        // Il master invia ai processi le porzioni di punti
+        /* Il master invia ai processi le porzioni di punti */ 
         MPI_Scatterv(all_points, sendcounts, senddispls, point_type,
                      local_dataset, local_dataset_size, point_type, 
                      0, MPI_COMM_WORLD);
     } else {
-        // I processi ricevono i punti
+        /* I processi ricevono i punti */ 
         MPI_Scatterv(NULL, NULL, NULL, point_type,
                      local_dataset, local_dataset_size, point_type, 
                      0, MPI_COMM_WORLD);
     }
     
-    // Come prima il KNN viene calcolato da 5 a 20, con uno step di 5
+    /* Come prima, i KNN vengono calcolati da 5 a 20, con uno step di 5 */ 
     for (int k = k_min; k <= k_max; k += k_step) {
-        // Alloco la memoria per i risultati
+        /* Alloco la memoria per i risultati */ 
         int **knn_results = (int **)malloc(local_n * sizeof(int *));
         double **distances = (double **)malloc(local_n * sizeof(double *));
         
@@ -136,13 +136,13 @@ int main(int argc, char *argv[]) {
             distances[i] = (double *)malloc(k * sizeof(double));
         }
         
-        // Costruzione dei KD-Tree locali
+        /* Costruzione dei KD-Tree locali */ 
         KDNode *local_kdTree = buildKDTree(local_dataset, 0, local_dataset_size, 0);
         
-        // Ricerca dei KNN
+        /* Ricerca dei KNN */ 
         for (int i = 0; i < local_n; i++) {
             findKNearestNeighbors(local_kdTree, local_points[i], k, knn_results[i], distances[i]);
-            // Print dei risultati
+            /* Print dei risultati */ 
             printf("Point %d nearest neighbors: ", local_points[i].original_index);
             for (int j = 0; j < k; j++) {
                 printf("%d ", knn_results[i][j]);
@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
             printf("\n");
         }
         
-        // Ennesimo clean up
+        /* Ennesimo clean up */ 
         freeKDTree(local_kdTree);
         
         for (int i = 0; i < local_n; i++) {
